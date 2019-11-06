@@ -3,11 +3,12 @@ import setSources from './components/setSources';
 import proxy from './components/proxyFactoryRequests';
 import '../sass/style.sass';
 import drawFirstArticles from './components/drawArticles';
+import search from './components/search';
 
-async function getSources() {
-	document.querySelector('#search').disabled = true;
+async function getSources(language) {
+	// document.querySelector('#search').disabled = true;
 
-	const language = document.querySelector('input[name="language"]:checked').value;
+	// const language = document.querySelector('input[name="language"]:checked').value;
 	const response = await proxy.createRequest(`https://newsapi.org/v2/sources?language=${language}&apiKey=${API}`, 'GET').sendRequest();
 
 	if (response.ok === false) {
@@ -43,36 +44,109 @@ class Model {
 	constructor() {
 	  this.sourses = [];
 	  this.data = [];
+	  this.showData = [];
+	  this.startNum;
+      this.endNum;
 	}
 
-	bindSourseListChanged(callback) {
-	    this.onSourseListChanged = callback
+	getArticlesData() {
+		this.data = [];
+		let data = search();
+
+		if (data) {
+			this.addData(data)
+
+			this.initStartEndArticles()
+		    this.setShowData()
+		}
 	}
 
-	bindDataListChanged(callback) {
-	    this.onDataListChanged = callback
+	initStartEndArticles() {
+		this.startNum = 0;
+		this.endNum = 10;
 	}
+
+	getDataSources(language) {
+		this.sourses = [];
+		let sources = getSources(language);
+
+		if (sources) {
+			this.addSourses(sources)
+		}
+	}
+
+	setShowData() {
+        let length = this.data.length;
+
+		if (length > this.endNum) {
+			this.endNum = length;
+		}
+
+		if (this.startNum < 0) {
+			this.startNum = 0
+		}
+
+		this.showData = this.data.slice(this.startNum, this.endNum)
+	}
+
+	addData(data) {
+		this.data.push(data)
+	}
+
+	// deleteData() {
+	// 	this.data = [];
+	// }
+
+	addSourses(sourses) {
+		this.sourses.push(sourses)
+	}
+
+	// deleteSourses() {
+	// 	this.sourses = [];
+	// }
+
+	nextArticles() {
+		this.startNum += 10;
+		this.endNum += 10;
+		this.setShowData()
+	}
+
+	prevArticles() {
+		this.startNum -= 10;
+		this.endNum -= 10;
+		this.setShowData()
+	}
+
+	lastArticles() {
+		this.data = this.data.sort((a, b) => {
+			a = new Date(a.publishedAt);
+			b = new Date(b.publishedAt);
+			return a > b ? -1 : a < b ? 1 : 0;
+		});
+
+		this.initStartEndArticles();
+	}
+
+	// bindInputChecked() {
+
+	// }
+
+	// bindSourseListChanged(callback) {
+	//     this.onSourseListChanged = callback
+	// }
+
+	// bindDataListChanged(callback) {
+	//     this.onDataListChanged = callback
+	// }
 
 	// _commit(todos) {
 	//   this.onTodoListChanged(todos)
 	//   localStorage.setItem('todos', JSON.stringify(todos))
 	// }
 
-	addData(data) {
-	  this.data.push(data)
-	}
 
-	deleteData() {
-      this.data = [];
-	}
 
-	addSourses(sourses) {
-		this.sourses.push(sourses)
-	  }
 
-	deleteSourses() {
-	  this.sourses = [];
-	}
 	//   this._commit(this.todos)
 	// }
 
@@ -101,9 +175,11 @@ class Model {
 
   class View {
 	constructor() {
-	  this.app = this.querySelectorAll('input[name="language"]')
-      this.search = this.querySelector('#search')
-
+	  this.app = document.querySelectorAll('input[name="language"]')
+      this.idSearch = document.querySelector('#search')
+	  this.idSources = document.querySelector('#sources')
+	  this.inputChecked;
+	//   this.initListener();
 	//   this.form = this.createElement('form')
 	//   this.input = this.createElement('input')
 	//   this.input.type = 'text'
@@ -119,7 +195,30 @@ class Model {
 
 	//   this._temporaryTodoText = ''
 	//   this._initLocalListeners()
+	  this.localListener();
 	}
+
+	// localListener() {
+	// 	this.app.forEach(item => item.addEventListener('click', () => {
+	// 		this.inputChecked = this.querySelector('input[name="language"]:checked').value;
+	// 	}));
+	// }
+
+	bindAddSources(handler) {
+		this.app.forEach(item => item.addEventListener('click', handler));
+	}
+
+	getValueLanguage() {
+		return document.querySelector('input[name="language"]:checked').value;
+	}
+
+
+
+
+	// initListener() {
+	// 	this.app.forEach(item => item.addEventListener('click', getSources));
+	// }
+
 
 	// get _todoText() {
 	//   return this.input.value
@@ -143,7 +242,8 @@ class Model {
 	//   return element
 	// }
 
-	displayData(data) {
+	// displayData(data) {
+
 	  // Delete all nodes
 	//   while (this.todoList.firstChild) {
 	// 	this.todoList.removeChild(this.todoList.firstChild)
@@ -187,10 +287,10 @@ class Model {
 
 	//   // Debugging
 	//   console.log(todos)
-	}
+	// }
 
-	displaySourses(sourses) {
-
+	displaySourses(sources) {
+		setSources(sources)
 	}
 
 
@@ -204,13 +304,13 @@ class Model {
 	// }
 
 
-	bindAddSourses() {
-		this.app.forEach(item => item.addEventListener('click', getSources));
-	}
+	// bindAddSourses() {
+	// 	this.app.forEach(item => item.addEventListener('click', getSources));
+	// }
 
-	bindAddDate() {
-		this.search.addEventListener('click', drawFirstArticles);
-	}
+	// bindAddDate() {
+	// 	this.search.addEventListener('click', drawFirstArticles);
+	// }
 
 
 
@@ -263,8 +363,10 @@ class Model {
 	  this.view = view
 
 	  // Explicit this binding
-	  this.model.bindAddDate(this.onDataListChanged)
-	  this.model.bindAddSourses(this.onDataListChanged)
+      this.model.bindTodoListChanged(this.onTodoListChanged)
+      this.view.bindAddSources(this.model.getDataSources(this.view.getValueLanguage()))
+	//   this.model.bindAddDate(this.onDataListChanged)
+	//   this.model.bindAddSourses(this.onDataListChanged)
 	//   this.model.bindTodoListChanged(this.onTodoListChanged)
 	//   this.view.bindAddTodo(this.handleAddTodo)
 	//   this.view.bindEditTodo(this.handleEditTodo)
@@ -273,6 +375,7 @@ class Model {
 
 	//   // Display initial todos
 	//   this.onTodoListChanged(this.model.todos)
+	 this.onSoursesListChanged(this.model.sources)
 	}
 
 	onDataListChanged = data => {
@@ -280,6 +383,7 @@ class Model {
 	}
 
 	onSoursesListChanged = sourses => {
+		this.view.idSearch.disabled = true;
 		this.view.displaySourses(sourses)
 	}
 
