@@ -2,7 +2,7 @@ import search from './search';
 import drawArticles from './drawArticles';
 import { setCurrentData } from './showArticles';
 
-function drawFirstArticles() {
+export function drawFirstArticles() {
 	document.querySelector('.articles').innerHTML = '';
     search().then((res) => {
         drawArticles(res, 0, 10);
@@ -18,7 +18,7 @@ function drawFirstArticles() {
 	// })
 }
 
-export default function setSources(sources) {
+export function setSources(sources) {
     document.querySelector('#sources').innerHTML = '';
     sources.forEach((item) => {
         const newOption = document.createElement('option');

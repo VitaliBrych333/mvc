@@ -4,6 +4,7 @@ import proxy from './components/proxyFactoryRequests';
 import '../sass/style.sass';
 import drawFirstArticles from './components/drawArticles';
 import search from './components/search';
+import drawFirstArticles from './components/setSources';
 
 async function getSources(language) {
 	// document.querySelector('#search').disabled = true;
@@ -46,7 +47,7 @@ class Model {
 	  this.data = [];
 	  this.showData = [];
 	  this.startNum;
-      this.endNum;
+    this.endNum;
 	}
 
 	getArticlesData() {
@@ -195,7 +196,7 @@ class Model {
 
 	//   this._temporaryTodoText = ''
 	//   this._initLocalListeners()
-	  this.localListener();
+	//   this.localListener();
 	}
 
 	// localListener() {
@@ -207,6 +208,12 @@ class Model {
 	bindAddSources(handler) {
 		this.app.forEach(item => item.addEventListener('click', handler));
 	}
+
+	bindAddArticles(handler) {
+		this.idSearch.addEventListener('click', handler)
+	}
+
+
 
 	getValueLanguage() {
 		return document.querySelector('input[name="language"]:checked').value;
@@ -291,6 +298,8 @@ class Model {
 
 	displaySourses(sources) {
 		setSources(sources)
+
+		this.bindAddArticles(this.model.getArticlesData())
 	}
 
 
@@ -363,7 +372,7 @@ class Model {
 	  this.view = view
 
 	  // Explicit this binding
-      this.model.bindTodoListChanged(this.onTodoListChanged)
+    //   this.model.bindTodoListChanged(this.onTodoListChanged)
       this.view.bindAddSources(this.model.getDataSources(this.view.getValueLanguage()))
 	//   this.model.bindAddDate(this.onDataListChanged)
 	//   this.model.bindAddSourses(this.onDataListChanged)
