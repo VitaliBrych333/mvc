@@ -13,18 +13,18 @@ class Model {
 		this.data = [];
 		search().then((res) => {
 			this.data = res;
-			this.onDataListChanged(this.data)
-			this.initStartEndArticles()
-			this.setShowData()
+			this.onDataListChanged(this.data);
+			this.initStartEndArticles();
+			this.setShowData();
 		});
 	}
 
 	bindonDataListChanged(callback) {
-		this.onDataListChanged = callback
+		this.onDataListChanged = callback;
 	}
 
 	bindonSourcesListChanged(callback) {
-		this.onSourcesListChanged = callback
+		this.onSourcesListChanged = callback;
 	}
 
 	initStartEndArticles() {
@@ -38,16 +38,16 @@ class Model {
 		getSources(event.target.value).then((res) => {
 			this.sources = res;
 
-			this.onSourcesListChanged(res)
+			this.onSourcesListChanged(res);
 		});
 	}
 
 	bindShowButtonNext(callback) {
-        this.showButtonNext = callback
+        this.showButtonNext = callback;
 	}
 
 	bindShowButtonPrev(callback) {
-		this.showButtonPrev = callback
+		this.showButtonPrev = callback;
 	}
 
 	bindHideButtonPrev(callback) {
@@ -63,31 +63,31 @@ class Model {
 
 		if (this.endNum >= length) {
 			this.endNum = length;
-			this.hideButtonNext()
+			this.hideButtonNext();
 		}
 
 		if (this.startNum <= 0) {
-			this.startNum = 0
+			this.startNum = 0;
 			this.hideButtonPrev();
 		}
 
-		this.showData = this.data.slice(this.startNum, this.endNum)
+		this.showData = this.data.slice(this.startNum, this.endNum);
 	}
 
 	nextArticles() {
 		this.startNum += 10;
 		this.endNum = this.startNum + 10;
-		this.showButtonPrev()
-		this.setShowData()
-		this.onDataListChanged(this.showData)
+		this.showButtonPrev();
+		this.setShowData();
+		this.onDataListChanged(this.showData);
 	}
 
 	prevArticles() {
 		this.endNum -= 10;
 		this.startNum = this.endNum - 10;
-		this.showButtonNext()
-		this.setShowData()
-		this.onDataListChanged(this.showData)
+		this.showButtonNext();
+		this.setShowData();
+		this.onDataListChanged(this.showData);
 	}
 
 	lastArticles() {
@@ -97,18 +97,18 @@ class Model {
 			return a > b ? -1 : a < b ? 1 : 0;
 		});
 		this.initStartEndArticles();
-		this.onDataListChanged(this.data)
-		this.hideButtonNext()
-        this.hideButtonPrev()
+		this.onDataListChanged(this.data);
+		this.hideButtonNext();
+        this.hideButtonPrev();
 	}
 }
 
 class View {
 	constructor() {
-		this.app = document.querySelectorAll('input[name="language"]')
-		this.idSearch = document.querySelector('#search')
-		this.idSources = document.querySelector('#sources')
-		this.clArticles = document.querySelector('.articles')
+		this.app = document.querySelectorAll('input[name="language"]');
+		this.idSearch = document.querySelector('#search');
+		this.idSources = document.querySelector('#sources');
+		this.clArticles = document.querySelector('.articles');
 		this.idButton = document.querySelector('#button');
 	}
 
@@ -117,7 +117,7 @@ class View {
 	}
 
 	bindAddArticles(handler) {
-		this.idSearch.addEventListener('click', handler)
+		this.idSearch.addEventListener('click', handler);
 	}
 
 	bindHandlerNext(handler) {
@@ -146,20 +146,20 @@ class View {
 
 	showButtonPrev() {
 		if (!document.querySelector('#prev')) {
-			let newButton = this.createButton('prev', 'Previous 10', this.showPrevArticles)
+			let newButton = this.createButton('prev', 'Previous 10', this.showPrevArticles);
 			this.idButton.insertBefore(newButton, document.querySelector('#next'));
 		}
 	}
 
 	showButtonNext() {
 		if (!document.querySelector('#next')) {
-		    let newButton = this.createButton('next', 'Next 10', this.showNextArticles)
+		    let newButton = this.createButton('next', 'Next 10', this.showNextArticles);
 			this.idButton.insertBefore(newButton, document.querySelector('#last'));
 		}
 	}
 
 	displaySources(sources) {
-		this.idSources.innerHTML = ''
+		this.idSources.innerHTML = '';
 
 		sources.forEach((item) => {
 			const newOption = document.createElement('option');
@@ -183,12 +183,12 @@ class View {
 		const length = articles.length;
 
 		if (!document.querySelector('#last')) {
-			let newButton = this.createButton('last', 'Show 10 last', this.showLastArticles)
+			let newButton = this.createButton('last', 'Show 10 last', this.showLastArticles);
 			this.idButton.appendChild(newButton);
 		}
 
 		if (length > 10 && !document.querySelector('#next') && endNum !== length) {
-			this.showButtonNext()
+			this.showButtonNext();
 		}
 
 		this.clArticles.innerHTML = '';
@@ -216,75 +216,75 @@ class View {
 
 class Controller {
 	constructor(model, view) {
-		this.model = model
-		this.view = view
+		this.model = model;
+		this.view = view;
 
-		this.model.bindonSourcesListChanged(this.onSourcesListChanged)
-		this.view.bindAddSources(this.getDataSources)
-		this.view.bindAddArticles(this.getDataArticles)
-		this.model.bindonDataListChanged(this.onDataListChanged)
+		this.model.bindonSourcesListChanged(this.onSourcesListChanged);
+		this.view.bindAddSources(this.getDataSources);
+		this.view.bindAddArticles(this.getDataArticles);
+		this.model.bindonDataListChanged(this.onDataListChanged);
 
-		this.view.bindHandlerNext(this.showNextArticles)
-		this.view.bindHandlerPrev(this.showPrevArticles)
-		this.view.bindHandlerLast(this.showLastArticles)
+		this.view.bindHandlerNext(this.showNextArticles);
+		this.view.bindHandlerPrev(this.showPrevArticles);
+		this.view.bindHandlerLast(this.showLastArticles);
 
-		this.model.bindHideButtonNext(this.hideButtonNext)
-		this.model.bindHideButtonPrev(this.hideButtonPrev)
+		this.model.bindHideButtonNext(this.hideButtonNext);
+		this.model.bindHideButtonPrev(this.hideButtonPrev);
 
-		this.model.bindShowButtonNext(this.showButtonNext)
-		this.model.bindShowButtonPrev(this.showButtonPrev)
+		this.model.bindShowButtonNext(this.showButtonNext);
+		this.model.bindShowButtonPrev(this.showButtonPrev);
 	}
 
 	getDataSources = () => {
-	    this.model.getDataSources()
+	    this.model.getDataSources();
 	}
 
 	getDataArticles = () => {
-	    this.model.getArticlesData()
+	    this.model.getArticlesData();
 	}
 
 	onDataListChanged = data => {
-	    this.view.displayData(data)
+	    this.view.displayData(data);
 	}
 
 	onSourcesListChanged = sources => {
-		this.view.displaySources(sources)
+		this.view.displaySources(sources);
 	}
 
 	onChangedStartEndArticles() {
-		this.model.setShowData()
-		this.model.initStartEndArticles()
+		this.model.setShowData();
+		this.model.initStartEndArticles();
 	}
 
 	showNextArticles = () => {
-		this.model.nextArticles()
+		this.model.nextArticles();
 	}
 
 	showPrevArticles = () => {
-		this.model.prevArticles()
+		this.model.prevArticles();
 	}
 
 	showLastArticles = () => {
-		this.model.lastArticles()
+		this.model.lastArticles();
 	}
 
 	hideButtonNext = () => {
-        this.view.hideButtonNext()
+        this.view.hideButtonNext();
 	}
 
 	hideButtonPrev = () => {
-		this.view.hideButtonPrev()
+		this.view.hideButtonPrev();
 	 }
 
 	showButtonNext = () => {
-		this.view.showButtonNext()
+		this.view.showButtonNext();
 	}
 
 	showButtonPrev = () => {
-        this.view.showButtonPrev()
+        this.view.showButtonPrev();
 	}
   }
 
 window.onload = () => {
-	const app = new Controller(new Model(), new View())
+	const app = new Controller(new Model(), new View());
 };

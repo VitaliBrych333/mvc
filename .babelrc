@@ -1,20 +1,13 @@
 {
-
 	"presets": [
 		["@babel/preset-env", {
-		  "useBuiltIns": false,
-		}],
+		  "useBuiltIns": false
+		}]
 	  ],
 	  "plugins": [
 		"@babel/plugin-transform-runtime",
 		"@babel/plugin-proposal-class-properties",
-		// [
-		// 	"component",
-		// 	{
-		// 	  "libraryName": "element-ui",
-		// 	  "styleLibraryName": "theme-chalk"
-		// 	}
-		//   ]
+		"@babel/plugin-syntax-dynamic-import"
 	  ]
 
 }
