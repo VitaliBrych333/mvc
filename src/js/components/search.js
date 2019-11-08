@@ -7,7 +7,7 @@ export default async function search() {
     const e = document.querySelector('#sources');
     const valueResource = e.options[e.selectedIndex].value;
     const date = new Date().getDate();
-    const month = new Date().getMonth();
+    const month = new Date().getMonth() + 1;
     const year = new Date().getFullYear();
 	const currentDate = `${year}-${month}-${date}`;
 	const responseNews = await proxy.createRequest(`https://newsapi.org/v2/everything?sources=${valueResource}&from=${currentDate}&to=${currentDate}&pageSize=100&sortBy=popularity&apiKey=${API}`, 'GET').sendRequest();

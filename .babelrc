@@ -1,13 +1,20 @@
 {
-    "presets": [
-		[
-		  "@babel/preset-env",
-		  {
-			"modules": "commonjs",
-			"targets": {
-			  "node": "current"
-			}
-		  }
-		]
+
+	"presets": [
+		["@babel/preset-env", {
+		  "useBuiltIns": false,
+		}],
+	  ],
+	  "plugins": [
+		"@babel/plugin-transform-runtime",
+		"@babel/plugin-proposal-class-properties",
+		// [
+		// 	"component",
+		// 	{
+		// 	  "libraryName": "element-ui",
+		// 	  "styleLibraryName": "theme-chalk"
+		// 	}
+		//   ]
 	  ]
+
 }

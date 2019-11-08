@@ -1,65 +1,30 @@
-import { API } from './components/api';
-import setSources from './components/setSources';
-import proxy from './components/proxyFactoryRequests';
 import '../sass/style.sass';
-import drawFirstArticles from './components/drawArticles';
 import search from './components/search';
-import drawFirstArticles from './components/setSources';
-
-async function getSources(language) {
-	// document.querySelector('#search').disabled = true;
-
-	// const language = document.querySelector('input[name="language"]:checked').value;
-	const response = await proxy.createRequest(`https://newsapi.org/v2/sources?language=${language}&apiKey=${API}`, 'GET').sendRequest();
-
-	if (response.ok === false) {
-		import(/* webpackChunkName: "lazyLoaderError" */ './components/lazyLoaderError').then(module => {
-			const Error = module.default;
-			let newError = new Error(responseNews.statusText);
-			newError.showError();
-            newError.hideError();
-		});
-	} else {
-		const myJson = await response.json();
-		const sources = myJson.sources;
-
-		if (sources.length > 100) {
-			import(/* webpackChunkName: "lazyLoaderError" */ './components/lazyLoaderError').then(module => {
-				const Error = module.default;
-			    let newError = new Error('Error. You got more than 100 sources');
-			    newError.showError();
-                newError.hideError();
-			});
-		} else {
-			setSources(sources);
-		}
-	}
-}
-
-window.onload = () => {
-    document.querySelectorAll('input[name="language"]').forEach(item => item.addEventListener('click', getSources));
-};
-
+import getSources from './components/getSources';
 
 class Model {
 	constructor() {
-	  this.sourses = [];
-	  this.data = [];
-	  this.showData = [];
-	  this.startNum;
-    this.endNum;
+		this.sources = [];
+		this.data = [];
+		this.showData = [];
 	}
 
 	getArticlesData() {
 		this.data = [];
-		let data = search();
-
-		if (data) {
-			this.addData(data)
-
+		search().then((res) => {
+			this.data = res;
+			this.onDataListChanged(this.data)
 			this.initStartEndArticles()
-		    this.setShowData()
-		}
+			this.setShowData()
+		});
+	}
+
+	bindonDataListChanged(callback) {
+		this.onDataListChanged = callback
+	}
+
+	bindonSourcesListChanged(callback) {
+		this.onSourcesListChanged = callback
 	}
 
 	initStartEndArticles() {
@@ -67,55 +32,62 @@ class Model {
 		this.endNum = 10;
 	}
 
-	getDataSources(language) {
+	getDataSources() {
 		this.sourses = [];
-		let sources = getSources(language);
 
-		if (sources) {
-			this.addSourses(sources)
-		}
+		getSources(event.target.value).then((res) => {
+			this.sources = res;
+
+			this.onSourcesListChanged(res)
+		});
+	}
+
+	bindShowButtonNext(callback) {
+        this.showButtonNext = callback
+	}
+
+	bindShowButtonPrev(callback) {
+		this.showButtonPrev = callback
+	}
+
+	bindHideButtonPrev(callback) {
+		this.hideButtonPrev = callback;
+	}
+
+	bindHideButtonNext(callback) {
+		this.hideButtonNext = callback;
 	}
 
 	setShowData() {
-        let length = this.data.length;
+        const length = this.data.length;
 
-		if (length > this.endNum) {
+		if (this.endNum >= length) {
 			this.endNum = length;
+			this.hideButtonNext()
 		}
 
-		if (this.startNum < 0) {
+		if (this.startNum <= 0) {
 			this.startNum = 0
+			this.hideButtonPrev();
 		}
 
 		this.showData = this.data.slice(this.startNum, this.endNum)
 	}
 
-	addData(data) {
-		this.data.push(data)
-	}
-
-	// deleteData() {
-	// 	this.data = [];
-	// }
-
-	addSourses(sourses) {
-		this.sourses.push(sourses)
-	}
-
-	// deleteSourses() {
-	// 	this.sourses = [];
-	// }
-
 	nextArticles() {
 		this.startNum += 10;
-		this.endNum += 10;
+		this.endNum = this.startNum + 10;
+		this.showButtonPrev()
 		this.setShowData()
+		this.onDataListChanged(this.showData)
 	}
 
 	prevArticles() {
-		this.startNum -= 10;
 		this.endNum -= 10;
+		this.startNum = this.endNum - 10;
+		this.showButtonNext()
 		this.setShowData()
+		this.onDataListChanged(this.showData)
 	}
 
 	lastArticles() {
@@ -124,86 +96,21 @@ class Model {
 			b = new Date(b.publishedAt);
 			return a > b ? -1 : a < b ? 1 : 0;
 		});
-
 		this.initStartEndArticles();
+		this.onDataListChanged(this.data)
+		this.hideButtonNext()
+        this.hideButtonPrev()
 	}
+}
 
-	// bindInputChecked() {
-
-	// }
-
-	// bindSourseListChanged(callback) {
-	//     this.onSourseListChanged = callback
-	// }
-
-	// bindDataListChanged(callback) {
-	//     this.onDataListChanged = callback
-	// }
-
-	// _commit(todos) {
-	//   this.onTodoListChanged(todos)
-	//   localStorage.setItem('todos', JSON.stringify(todos))
-	// }
-
-
-
-
-	//   this._commit(this.todos)
-	// }
-
-	// editTodo(id, updatedText) {
-	//   this.todos = this.todos.map(todo =>
-	// 	todo.id === id ? { id: todo.id, text: updatedText, complete: todo.complete } : todo
-	//   )
-
-	//   this._commit(this.todos)
-	// }
-
-	// deleteTodo(id) {
-	//   this.todos = this.todos.filter(todo => todo.id !== id)
-
-	//   this._commit(this.todos)
-	// }
-
-	// toggleTodo(id) {
-	//   this.todos = this.todos.map(todo =>
-	// 	todo.id === id ? { id: todo.id, text: todo.text, complete: !todo.complete } : todo
-	//   )
-
-	//   this._commit(this.todos)
-	// }
-  }
-
-  class View {
+class View {
 	constructor() {
-	  this.app = document.querySelectorAll('input[name="language"]')
-      this.idSearch = document.querySelector('#search')
-	  this.idSources = document.querySelector('#sources')
-	  this.inputChecked;
-	//   this.initListener();
-	//   this.form = this.createElement('form')
-	//   this.input = this.createElement('input')
-	//   this.input.type = 'text'
-	//   this.input.placeholder = 'Add todo'
-	//   this.input.name = 'todo'
-	//   this.submitButton = this.createElement('button')
-	//   this.submitButton.textContent = 'Submit'
-	//   this.form.append(this.input, this.submitButton)
-	//   this.title = this.createElement('h1')
-	//   this.title.textContent = 'Todos'
-	//   this.todoList = this.createElement('ul', 'todo-list')
-	//   this.app.append(this.title, this.form, this.todoList)
-
-	//   this._temporaryTodoText = ''
-	//   this._initLocalListeners()
-	//   this.localListener();
+		this.app = document.querySelectorAll('input[name="language"]')
+		this.idSearch = document.querySelector('#search')
+		this.idSources = document.querySelector('#sources')
+		this.clArticles = document.querySelector('.articles')
+		this.idButton = document.querySelector('#button');
 	}
-
-	// localListener() {
-	// 	this.app.forEach(item => item.addEventListener('click', () => {
-	// 		this.inputChecked = this.querySelector('input[name="language"]:checked').value;
-	// 	}));
-	// }
 
 	bindAddSources(handler) {
 		this.app.forEach(item => item.addEventListener('click', handler));
@@ -213,204 +120,171 @@ class Model {
 		this.idSearch.addEventListener('click', handler)
 	}
 
-
-
-	getValueLanguage() {
-		return document.querySelector('input[name="language"]:checked').value;
+	bindHandlerNext(handler) {
+		this.showNextArticles = handler;
 	}
 
-
-
-
-	// initListener() {
-	// 	this.app.forEach(item => item.addEventListener('click', getSources));
-	// }
-
-
-	// get _todoText() {
-	//   return this.input.value
-	// }
-
-	// _resetInput() {
-	//   this.input.value = ''
-	// }
-
-	// createElement(tag, className) {
-	//   const element = document.createElement(tag)
-
-	//   if (className) element.classList.add(className)
-
-	//   return element
-	// }
-
-	// getElement(selector) {
-	//   const element = document.querySelector(selector)
-
-	//   return element
-	// }
-
-	// displayData(data) {
-
-	  // Delete all nodes
-	//   while (this.todoList.firstChild) {
-	// 	this.todoList.removeChild(this.todoList.firstChild)
-	//   }
-
-	//   // Show default message
-	//   if (todos.length === 0) {
-	// 	const p = this.createElement('p')
-	// 	p.textContent = 'Nothing to do! Add a task?'
-	// 	this.todoList.append(p)
-	//   } else {
-	// 	// Create nodes
-	// 	todos.forEach(todo => {
-	// 	  const li = this.createElement('li')
-	// 	  li.id = todo.id
-
-	// 	  const checkbox = this.createElement('input')
-	// 	  checkbox.type = 'checkbox'
-	// 	  checkbox.checked = todo.complete
-
-	// 	  const span = this.createElement('span')
-	// 	  span.contentEditable = true
-	// 	  span.classList.add('editable')
-
-	// 	  if (todo.complete) {
-	// 		const strike = this.createElement('s')
-	// 		strike.textContent = todo.text
-	// 		span.append(strike)
-	// 	  } else {
-	// 		span.textContent = todo.text
-	// 	  }
-
-	// 	  const deleteButton = this.createElement('button', 'delete')
-	// 	  deleteButton.textContent = 'Delete'
-	// 	  li.append(checkbox, span, deleteButton)
-
-	// 	  // Append nodes
-	// 	  this.todoList.append(li)
-	// 	})
-	//   }
-
-	//   // Debugging
-	//   console.log(todos)
-	// }
-
-	displaySourses(sources) {
-		setSources(sources)
-
-		this.bindAddArticles(this.model.getArticlesData())
+	bindHandlerPrev(handler) {
+		this.showPrevArticles = handler;
 	}
 
+	bindHandlerLast(handler) {
+		this.showLastArticles = handler;
+	}
 
+	hideButtonNext() {
+		if (document.querySelector('#next')) {
+			document.querySelector('#next').remove();
+		}
+	}
 
-	// _initLocalListeners() {
-	//   this.todoList.addEventListener('input', event => {
-	// 	if (event.target.className === 'editable') {
-	// 	  this._temporaryTodoText = event.target.innerText
-	// 	}
-	//   })
-	// }
+	hideButtonPrev() {
+		if (document.querySelector('#prev')) {
+			document.querySelector('#prev').remove();
+		}
+	}
 
+	showButtonPrev() {
+		if (!document.querySelector('#prev')) {
+			let newButton = this.createButton('prev', 'Previous 10', this.showPrevArticles)
+			this.idButton.insertBefore(newButton, document.querySelector('#next'));
+		}
+	}
 
-	// bindAddSourses() {
-	// 	this.app.forEach(item => item.addEventListener('click', getSources));
-	// }
+	showButtonNext() {
+		if (!document.querySelector('#next')) {
+		    let newButton = this.createButton('next', 'Next 10', this.showNextArticles)
+			this.idButton.insertBefore(newButton, document.querySelector('#last'));
+		}
+	}
 
-	// bindAddDate() {
-	// 	this.search.addEventListener('click', drawFirstArticles);
-	// }
+	displaySources(sources) {
+		this.idSources.innerHTML = ''
 
+		sources.forEach((item) => {
+			const newOption = document.createElement('option');
+			newOption.innerHTML = `${item.id}`;
+			this.idSources.appendChild(newOption);
+		});
 
+		this.idSources.disabled = false;
+		this.idSearch.disabled = false;
+	}
 
-	// bindAddTodo(handler) {
-	//   this.form.addEventListener('submit', event => {
-	// 	event.preventDefault()
+	createButton(id, content, handler) {
+		const newButton = document.createElement('button');
+        newButton.id = id;
+        newButton.innerHTML = content;
+		newButton.addEventListener('click', handler);
+		return newButton;
+	}
 
-	// 	if (this._todoText) {
-	// 	  handler(this._todoText)
-	// 	  this._resetInput()
-	// 	}
-	//   })
-	// }
+	drawArticles(articles, startNum, endNum) {
+		const length = articles.length;
 
-	// bindDeleteTodo(handler) {
-	//   this.todoList.addEventListener('click', event => {
-	// 	if (event.target.className === 'delete') {
-	// 	  const id = parseInt(event.target.parentElement.id)
+		if (!document.querySelector('#last')) {
+			let newButton = this.createButton('last', 'Show 10 last', this.showLastArticles)
+			this.idButton.appendChild(newButton);
+		}
 
-	// 	  handler(id)
-	// 	}
-	//   })
-	// }
+		if (length > 10 && !document.querySelector('#next') && endNum !== length) {
+			this.showButtonNext()
+		}
 
-	// bindEditTodo(handler) {
-	//   this.todoList.addEventListener('focusout', event => {
-	// 	if (this._temporaryTodoText) {
-	// 	  const id = parseInt(event.target.parentElement.id)
+		this.clArticles.innerHTML = '';
 
-	// 	  handler(id, this._temporaryTodoText)
-	// 	  this._temporaryTodoText = ''
-	// 	}
-	//   })
-	// }
+		articles.slice(startNum, endNum).forEach((item) => {
+			const newDiv = document.createElement('div');
+			newDiv.innerHTML = `<div>
+				  <p>Author: ${item.author}</p>
+				  <p>Title: ${item.title}</p>
+				  <p>Content: ${item.content}</p>
+				  <p>Description: ${item.description}</p>
+				  <p>Date: ${item.publishedAt.slice(0, 10)} ${item.publishedAt.slice(11, 19)}</p>
+				  <p>Source: <a href='${item.url}'> Read more...</a></p>
+				  <p>Link on image: <a href='${item.urlToImage}'> please click</a><p>
+				</div>`;
+			this.clArticles.appendChild(newDiv);
+		});
+	}
 
-	// bindToggleTodo(handler) {
-	//   this.todoList.addEventListener('change', event => {
-	// 	if (event.target.type === 'checkbox') {
-	// 	  const id = parseInt(event.target.parentElement.id)
+	displayData(data) {
+		this.clArticles.innerHTML = '';
+		this.drawArticles(data, 0, 10);
+	}
+}
 
-	// 	  handler(id)
-	// 	}
-	//   })
-	// }
-  }
-
-  class Controller {
+class Controller {
 	constructor(model, view) {
-	  this.model = model
-	  this.view = view
+		this.model = model
+		this.view = view
 
-	  // Explicit this binding
-    //   this.model.bindTodoListChanged(this.onTodoListChanged)
-      this.view.bindAddSources(this.model.getDataSources(this.view.getValueLanguage()))
-	//   this.model.bindAddDate(this.onDataListChanged)
-	//   this.model.bindAddSourses(this.onDataListChanged)
-	//   this.model.bindTodoListChanged(this.onTodoListChanged)
-	//   this.view.bindAddTodo(this.handleAddTodo)
-	//   this.view.bindEditTodo(this.handleEditTodo)
-	//   this.view.bindDeleteTodo(this.handleDeleteTodo)
-	//   this.view.bindToggleTodo(this.handleToggleTodo)
+		this.model.bindonSourcesListChanged(this.onSourcesListChanged)
+		this.view.bindAddSources(this.getDataSources)
+		this.view.bindAddArticles(this.getDataArticles)
+		this.model.bindonDataListChanged(this.onDataListChanged)
 
-	//   // Display initial todos
-	//   this.onTodoListChanged(this.model.todos)
-	 this.onSoursesListChanged(this.model.sources)
+		this.view.bindHandlerNext(this.showNextArticles)
+		this.view.bindHandlerPrev(this.showPrevArticles)
+		this.view.bindHandlerLast(this.showLastArticles)
+
+		this.model.bindHideButtonNext(this.hideButtonNext)
+		this.model.bindHideButtonPrev(this.hideButtonPrev)
+
+		this.model.bindShowButtonNext(this.showButtonNext)
+		this.model.bindShowButtonPrev(this.showButtonPrev)
+	}
+
+	getDataSources = () => {
+	    this.model.getDataSources()
+	}
+
+	getDataArticles = () => {
+	    this.model.getArticlesData()
 	}
 
 	onDataListChanged = data => {
-	  this.view.displayData(data)
+	    this.view.displayData(data)
 	}
 
-	onSoursesListChanged = sourses => {
-		this.view.idSearch.disabled = true;
-		this.view.displaySourses(sourses)
+	onSourcesListChanged = sources => {
+		this.view.displaySources(sources)
 	}
 
-	// handleAddTodo = todoText => {
-	//   this.model.addTodo(todoText)
-	// }
+	onChangedStartEndArticles() {
+		this.model.setShowData()
+		this.model.initStartEndArticles()
+	}
 
-	// handleEditTodo = (id, todoText) => {
-	//   this.model.editTodo(id, todoText)
-	// }
+	showNextArticles = () => {
+		this.model.nextArticles()
+	}
 
-	// handleDeleteTodo = id => {
-	//   this.model.deleteTodo(id)
-	// }
+	showPrevArticles = () => {
+		this.model.prevArticles()
+	}
 
-	// handleToggleTodo = id => {
-	//   this.model.toggleTodo(id)
-	// }
+	showLastArticles = () => {
+		this.model.lastArticles()
+	}
+
+	hideButtonNext = () => {
+        this.view.hideButtonNext()
+	}
+
+	hideButtonPrev = () => {
+		this.view.hideButtonPrev()
+	 }
+
+	showButtonNext = () => {
+		this.view.showButtonNext()
+	}
+
+	showButtonPrev = () => {
+        this.view.showButtonPrev()
+	}
   }
 
-  const app = new Controller(new Model(), new View())
+window.onload = () => {
+	const app = new Controller(new Model(), new View())
+};
