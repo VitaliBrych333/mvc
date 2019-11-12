@@ -19,11 +19,11 @@ class Model {
 		});
 	}
 
-	bindonDataListChanged(callback) {
+	onHasDataListChangedBefore(callback) {
 		this.onDataListChanged = callback;
 	}
-
-	bindonSourcesListChanged(callback) {
+	
+	onHasSourcesListChangedBefore(callback) {
 		this.onSourcesListChanged = callback;
 	}
 
@@ -42,19 +42,19 @@ class Model {
 		});
 	}
 
-	bindShowButtonNext(callback) {
+	onHasButtonNextBefore(callback) {
         this.showButtonNext = callback;
 	}
 
-	bindShowButtonPrev(callback) {
+	onHasButtonPrevBefore(callback) {
 		this.showButtonPrev = callback;
 	}
 
-	bindHideButtonPrev(callback) {
+	onDelButtonPrevBefore(callback) {
 		this.hideButtonPrev = callback;
 	}
 
-	bindHideButtonNext(callback) {
+	onDelButtonNextBefore(callback) {
 		this.hideButtonNext = callback;
 	}
 
@@ -219,20 +219,20 @@ class Controller {
 		this.model = model;
 		this.view = view;
 
-		this.model.bindonSourcesListChanged(this.onSourcesListChanged);
+		this.model.onHasSourcesListChangedBefore(this.onSourcesListChanged);
 		this.view.bindAddSources(this.getDataSources);
 		this.view.bindAddArticles(this.getDataArticles);
-		this.model.bindonDataListChanged(this.onDataListChanged);
+		this.model.onHasDataListChangedBefore(this.onDataListChanged);
 
 		this.view.bindHandlerNext(this.showNextArticles);
 		this.view.bindHandlerPrev(this.showPrevArticles);
 		this.view.bindHandlerLast(this.showLastArticles);
 
-		this.model.bindHideButtonNext(this.hideButtonNext);
-		this.model.bindHideButtonPrev(this.hideButtonPrev);
+		this.model.onDelButtonNextBefore(this.hideButtonNext);
+		this.model.onDelButtonPrevBefore(this.hideButtonPrev);
 
-		this.model.bindShowButtonNext(this.showButtonNext);
-		this.model.bindShowButtonPrev(this.showButtonPrev);
+		this.model.onHasButtonNextBefore(this.showButtonNext);
+		this.model.onHasButtonPrevBefore(this.showButtonPrev);
 	}
 
 	getDataSources = () => {
